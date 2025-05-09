@@ -57,6 +57,13 @@ This project is a simple Kanban-style task dashboard that allows users to manage
 - I didn't add authentication or multi-user support.
 - Form validation can be improved further.
 
+## 🔹 Improvements
+
+- Add task priority and due dates.
+- Implement filtering/sorting.
+- Improve accessibility (keyboard drag & drop).
+- Add animations for smoother UX.
+
 ## 🔹 Technology Rating (Out of 10)
 
 | Technology        | Rating |
