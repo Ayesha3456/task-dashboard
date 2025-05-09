@@ -1,0 +1,17 @@
+.task-board {
+  padding: 20px;
+}
+
+.board-columns {
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.board-column {
+  flex: 1;
+  background: #f0f0f0;
+  padding: 15px;
+  border-radius: 8px;
+  min-height: 300px;
+}

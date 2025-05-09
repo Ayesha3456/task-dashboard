@@ -1,0 +1,54 @@
+<div class="container mt-4">
+  <h2 class="text-center mb-4">Task Dashboard</h2>
+  <div class="text-end mb-3">
+    <button type="button" class="btn btn-success" (click)="openNewTaskForm(taskModal)">
+      + Add Task
+    </button>
+  </div>
+
+  <div class="row">
+    <div
+      class="col-md-4"
+      *ngFor="let status of statuses"
+      (dragover)="allowDrop($event)"
+      (drop)="onDrop(status)"
+    >
+      <div class="card border-secondary mb-3 shadow-sm">
+        <div class="card-header bg-secondary text-white text-center">
+          {{ status }}
+        </div>
+        <div class="card-body" style="min-height: 300px;">
+          <app-task-item
+            *ngFor="let task of getTasksByStatus(status)"
+            [task]="task"
+            (edit)="editTask(task, taskModal)"
+            (delete)="deleteTask(task.id)"
+            (dragStart)="onDragStart(task)"
+          ></app-task-item>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Task Form Modal -->
+  <ng-template #taskModal let-modal>
+    <div class="modal-header bg-info text-white">
+      <h5 class="modal-title">
+        {{ editingTask ? 'Edit Task' : 'Add New Task' }}
+      </h5>
+      <button
+        type="button"
+        class="btn-close"
+        (click)="modal.dismiss()"
+        aria-label="Close"
+      ></button>
+    </div>
+    <div class="modal-body">
+      <app-task-form
+        [task]="editingTask"
+        (save)="saveTask($event)"
+        (cancel)="cancelForm()"
+      ></app-task-form>
+    </div>
+  </ng-template>
+</div>

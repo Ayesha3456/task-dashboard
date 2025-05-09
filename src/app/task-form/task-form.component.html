@@ -1,0 +1,48 @@
+<form (ngSubmit)="onSave()" class="row g-3">
+  <div class="col-12">
+    <label class="form-label">Title</label>
+    <input
+      type="text"
+      class="form-control"
+      [(ngModel)]="taskData.title"
+      name="title"
+      required
+    />
+  </div>
+
+  <div class="col-12">
+    <label class="form-label">Description</label>
+    <textarea
+      class="form-control"
+      rows="3"
+      [(ngModel)]="taskData.description"
+      name="description"
+    ></textarea>
+  </div>
+
+  <div class="col-12">
+    <label class="form-label">Status</label>
+    <select
+      class="form-select"
+      [(ngModel)]="taskData.status"
+      name="status"
+      required
+    >
+      <option value="To Do">To Do</option>
+      <option value="In Progress">In Progress</option>
+      <option value="Done">Done</option>
+  </select>
+</div>
+
+
+
+<div class="col-6 text-end">
+  <button type="submit" class="btn btn-primary">Save</button>
+</div>
+
+<div class="col-6 text-end">
+  <button type="button" class="btn btn-secondary" (click)="onCancel()">
+    Cancel
+  </button>
+</div>
+</form>
