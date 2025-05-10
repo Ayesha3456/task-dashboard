@@ -1,94 +1,114 @@
 import { Component, OnInit } from '@angular/core';
-import { TaskService } from '../task.service';
-import { Task } from '../task.model';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
-import { TaskFormComponent } from '../task-form/task-form.component';
-import { TaskItemComponent } from '../task-item/task-item.component';
-import { FormsModule } from '@angular/forms';
+import { TaskService } from '../task.service';
+
+interface Task {
+  id: number;
+  title: string;
+  description: string;
+  status: 'To Do' | 'In Progress' | 'Done';
+}
 
 @Component({
   selector: 'app-task-board',
   templateUrl: './task-board.component.html',
   styleUrls: ['./task-board.component.css'],
-  imports: [CommonModule, FormsModule, TaskItemComponent, TaskFormComponent]
+  imports: [DragDropModule, ReactiveFormsModule, CommonModule],
 })
 export class TaskBoardComponent implements OnInit {
-  statuses: Array<'To Do' | 'In Progress' | 'Done'> = ['To Do', 'In Progress', 'Done'];
+  newTaskForm: FormGroup;
   tasks: Task[] = [];
-  draggedTask: Task | null = null;
-  editingTask?: Task;
-  showForm = false;
+  editingTask: Task | null = null;
 
-  constructor(private modalService: NgbModal, private taskService: TaskService) {}
+  constructor(
+    private fb: FormBuilder,
+    private taskService: TaskService  // Inject TaskService
+  ) {
+    this.newTaskForm = this.fb.group({
+      title: ['', Validators.required],
+      description: ['', Validators.required],
+      status: ['', Validators.required]
+    });
+  }
 
   ngOnInit() {
-    this.loadTasks();
+    this.loadTasks();  // Load tasks on component initialization
   }
 
+  // Fetch tasks from the backend
   loadTasks() {
-    this.taskService.getTasks().subscribe(data => {
-      this.tasks = data;
+    this.taskService.getTasks().subscribe(tasks => {
+      this.tasks = tasks;
     });
   }
 
-  onDragStart(task: Task) {
-    this.draggedTask = task;
+  // Add a new task
+  addTask() {
+    const newTask: Task = {
+      id: Date.now(), // Simple ID generator, can be changed to a better solution
+      title: this.newTaskForm.value.title,
+      description: this.newTaskForm.value.description,
+      status: this.newTaskForm.value.status
+    };
+
+    this.taskService.addTask(newTask).subscribe(task => {
+      this.tasks.push(task);
+      this.newTaskForm.reset();  // Reset form after adding task
+    });
   }
 
-  onDrop(status: 'To Do' | 'In Progress' | 'Done') {
-    if (this.draggedTask) {
-      const updatedTask = { ...this.draggedTask, status };
-      this.taskService.updateTask(updatedTask).subscribe(() => {
-        this.loadTasks();
-      });
-      this.draggedTask = null;
-    }
+  // Save edited task
+  saveEditedTask() {
+    const updatedTask = { ...this.editingTask, ...this.newTaskForm.value };
+    this.taskService.updateTask(updatedTask).subscribe(() => {
+      const index = this.tasks.findIndex(task => task.id === updatedTask.id);
+      if (index !== -1) {
+        this.tasks[index] = updatedTask;
+      }
+      this.editingTask = null;  // Reset editing state
+      this.newTaskForm.reset(); // Reset form after saving task
+    });
   }
 
-  allowDrop(event: DragEvent) {
-    event.preventDefault();
+  // Cancel edit
+  cancelEdit() {
+    this.editingTask = null; // Reset editing state
+    this.newTaskForm.reset(); // Reset form
   }
 
-  openNewTaskForm(content: any) {
-    this.editingTask = undefined;
-    this.showForm = true;
-    this.modalService.open(content, { size: 'lg' });
+  // Handle drag and drop to update task status
+  onDrop(event: CdkDragDrop<Task[]>) {
+    const movedTask = event.item.data;
+    const newStatus = event.container.id;
+
+    movedTask.status = newStatus as 'To Do' | 'In Progress' | 'Done';
+
+    this.taskService.updateTask(movedTask).subscribe(() => {
+      const taskIndex = this.tasks.findIndex(task => task.id === movedTask.id);
+      if (taskIndex !== -1) {
+        this.tasks.splice(taskIndex, 1); // Remove the task from the array
+        this.tasks.push(movedTask); // Add the updated task back to the array
+      }
+    });
   }
 
-  editTask(task: Task, content: any) {
-    this.editingTask = { ...task };
-    this.showForm = true;
-    this.modalService.open(content, { size: 'lg' });
+  // Edit an existing task
+  editTask(task: Task) {
+    this.editingTask = { ...task }; // Clone the task to edit
+    this.newTaskForm.patchValue(task); // Populate form with task data
   }
 
-  saveTask(task: Task) {
-    if (task.id === 0) {
-      this.taskService.addTask(task).subscribe(() => {
-        this.loadTasks();
-      });
-    } else {
-      this.taskService.updateTask(task).subscribe(() => {
-        this.loadTasks();
-      });
-    }
-
-    this.showForm = false;
-    this.modalService.dismissAll();
-  }
-
+  // Delete a task by ID
   deleteTask(taskId: number) {
     this.taskService.deleteTask(taskId).subscribe(() => {
-      this.loadTasks();
+      this.tasks = this.tasks.filter(task => task.id !== taskId); // Remove task by ID
     });
   }
 
-  cancelForm() {
-    this.showForm = false;
-    this.modalService.dismissAll();
-  }
-
-  getTasksByStatus(status: 'To Do' | 'In Progress' | 'Done') {
+  // Get tasks filtered by their status
+  getTasksByStatus(status: string): Task[] {
     return this.tasks.filter(task => task.status === status);
   }
 }

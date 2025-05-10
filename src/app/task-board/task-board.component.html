@@ -1,54 +1,40 @@
-<div class="container mt-4">
-  <h2 class="text-center mb-4">Task Dashboard</h2>
-  <div class="text-end mb-3">
-    <button type="button" class="btn btn-success" (click)="openNewTaskForm(taskModal)">
-      + Add Task
-    </button>
+<div class="task-board">
+  <h2>Task Board</h2>
+
+  <!-- New Task Form (Add Task) -->
+  <div class="add-task">
+    <form [formGroup]="newTaskForm" (ngSubmit)="editingTask ? saveEditedTask() : addTask()">
+      <input formControlName="title" placeholder="Task Title" required />
+      <textarea formControlName="description" placeholder="Task Description" required></textarea>
+      <select formControlName="status" required>
+        <option value="To Do">To Do</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Done">Done</option>
+      </select>
+      <button type="submit">{{ editingTask ? 'Save' : 'Add Task' }}</button>
+      <button *ngIf="editingTask" type="button" (click)="cancelEdit()">Cancel</button>
+    </form>
   </div>
 
-  <div class="row">
+  <!-- Kanban Columns -->
+  <div class="kanban-columns">
     <div
-      class="col-md-4"
-      *ngFor="let status of statuses"
-      (dragover)="allowDrop($event)"
-      (drop)="onDrop(status)"
+      *ngFor="let status of ['To Do', 'In Progress', 'Done']"
+      class="kanban-column"
+      cdkDropList
+      [cdkDropListData]="getTasksByStatus(status)"
+      (cdkDropListDropped)="onDrop($event)"
+      [id]="status"
     >
-      <div class="card border-secondary mb-3 shadow-sm">
-        <div class="card-header bg-secondary text-white text-center">
-          {{ status }}
-        </div>
-        <div class="card-body" style="min-height: 300px;">
-          <app-task-item
-            *ngFor="let task of getTasksByStatus(status)"
-            [task]="task"
-            (edit)="editTask(task, taskModal)"
-            (delete)="deleteTask(task.id)"
-            (dragStart)="onDragStart(task)"
-          ></app-task-item>
+      <h3>{{ status }}</h3>
+      <div *ngFor="let task of getTasksByStatus(status)" cdkDrag [cdkDragData]="task">
+        <div class="task-card">
+          <h4>{{ task.title }}</h4>
+          <p>{{ task.description }}</p>
+          <button (click)="editTask(task)">Edit</button>
+          <button (click)="deleteTask(task.id)">Delete</button>
         </div>
       </div>
     </div>
   </div>
-
-  <!-- Task Form Modal -->
-  <ng-template #taskModal let-modal>
-    <div class="modal-header bg-info text-white">
-      <h5 class="modal-title">
-        {{ editingTask ? 'Edit Task' : 'Add New Task' }}
-      </h5>
-      <button
-        type="button"
-        class="btn-close"
-        (click)="modal.dismiss()"
-        aria-label="Close"
-      ></button>
-    </div>
-    <div class="modal-body">
-      <app-task-form
-        [task]="editingTask"
-        (save)="saveTask($event)"
-        (cancel)="cancelForm()"
-      ></app-task-form>
-    </div>
-  </ng-template>
 </div>
