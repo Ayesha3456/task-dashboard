@@ -7,35 +7,19 @@ A simple Kanban-style task management app where users can add, view, and move ta
 - View tasks in three columns: To Do, In Progress, Done
 - Create new tasks via a modal form
 - Drag and drop tasks between columns
-- Data persistence using REST API (JSON Server)
 
 ## 🛠️ Technologies
 
 - Angular
 - Bootstrap
-- JSON Server for mock REST API
 
 🔧 Run the app
 bash
 Copy
 Edit
-# Start JSON Server
-npx json-server --watch db.json --port 3000
 
 # Start frontend
 ng serve  # or npm start for React
-📁 API Endpoints (Mock)
-GET /tasks
-
-POST /tasks
-
-PUT /tasks/:id
-
-DELETE /tasks/:id
-
-yaml
-Copy
-Edit
 
 ---
 
@@ -69,7 +53,6 @@ This project is a simple Kanban-style task dashboard that allows users to manage
 | Technology        | Rating |
 |-------------------|--------|
 | Angular/React     | 8/10   |
-| REST API (JSON)   | 9/10   |
 | Bootstrap/Styling | 8/10   |
 | Drag & Drop       | 7/10   |
 
