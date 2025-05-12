@@ -1,6 +1,5 @@
 export interface Task {
-  id: number;
-  title: string;
-  description?: string;
-  status: 'To Do' | 'In Progress' | 'Done';
+  id: string;
+  content: string;
+  status: 'todo' | 'in-progress' | 'done';
 }
